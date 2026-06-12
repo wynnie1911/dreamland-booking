@@ -496,9 +496,10 @@
   let selectedDate = null;
   let selectedSlot = null;
 
-  // Set min date = today
+  // Set min date = today (Dùng múi giờ địa phương chuẩn của Úc/Việt Nam)
   const dateInput = document.getElementById('date-input');
-  const today = new Date().toISOString().split('T')[0];
+  const nowLoc = new Date();
+  const today = nowLoc.getFullYear() + '-' + String(nowLoc.getMonth() + 1).padStart(2, '0') + '-' + String(nowLoc.getDate()).padStart(2, '0');
   dateInput.min = today;
   dateInput.value = today;
 
@@ -571,7 +572,8 @@
     if (!selectedSlot) return;
     const d = new Date(selectedDate + 'T00:00:00');
     const dateStr = d.toLocaleDateString('en-AU', { weekday:'long', day:'numeric', month:'long', year:'numeric' });
-    document.getElementById('summary-main').textContent = `${selectedSlot.start} – ${selectedSlot.end}`;
+    // Đã sửa đổi ký tự gạch ngang chuẩn ở dòng dưới đây
+    document.getElementById('summary-main').textContent = `${selectedSlot.start} - ${selectedSlot.end}`;
     document.getElementById('summary-sub').textContent = dateStr;
     goToScreen(2);
   });
@@ -625,13 +627,13 @@
         errEl.textContent = data.error || 'Something went wrong. Please try again.';
         errEl.style.display = 'block';
         btn.disabled = false;
-        btn.textContent = 'Confirm booking';
+        btn.innerHTML = 'Confirm booking';
       }
     } catch (e) {
       errEl.textContent = 'Connection error. Please check your internet and try again.';
       errEl.style.display = 'block';
       btn.disabled = false;
-      btn.textContent = 'Confirm booking';
+      btn.innerHTML = 'Confirm booking';
     }
   });
 
@@ -657,7 +659,11 @@
     document.getElementById('f-children').value = '';
     document.getElementById('slots-container').innerHTML = '';
     document.getElementById('btn-next-1').disabled = true;
+    
+    // Đã sửa đổi: Tải lại slot mới nhất từ dữ liệu Google Sheets thực tế
     dateInput.value = today;
+    loadSlots(today);
+    
     goToScreen(1);
   }
 
