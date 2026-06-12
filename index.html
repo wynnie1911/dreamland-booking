@@ -615,7 +615,7 @@
         numChildren: String(parseInt(children)),
       });
 
-      const res = await fetch(`${API_URL}&${params.toString()}`);
+      const res = await fetch(`${API_URL}?${params.toString()}`);
       const data = await res.json();
 
       if (data.success) {
