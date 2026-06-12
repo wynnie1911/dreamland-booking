@@ -604,24 +604,18 @@
     btn.innerHTML = '<div class="spinner"></div> Confirming...';
 
     try {
-      const payload = {
+      // Apps Script CORS fix: send as GET with URL params
+      const params = new URLSearchParams({
         action: 'createBooking',
         date: selectedDate,
         slot: selectedSlot.key,
         parentName: name,
         parentEmail: email,
         parentPhone: phone,
-        numChildren: parseInt(children),
-      };
-
-      // Apps Script CORS fix: send as form data with payload in 'data' param
-      const formData = new FormData();
-      formData.append('data', JSON.stringify(payload));
-
-      const res = await fetch(API_URL, {
-        method: 'POST',
-        body: formData,
+        numChildren: String(parseInt(children)),
       });
+
+      const res = await fetch(`${API_URL}&${params.toString()}`);
       const data = await res.json();
 
       if (data.success) {
