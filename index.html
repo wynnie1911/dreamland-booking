@@ -5,8 +5,6 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>Book a Session — My Little Dreamland</title>
 <style>
-  @import url('https://fonts.googleapis.com/css2?family=DM+Sans:wght@300;400;500;600&family=DM+Serif+Display:ital@0;1&display=swap');
-
   *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
 
   :root {
@@ -16,54 +14,60 @@
     --ink-soft: #6B6560;
     --ink-faint: #EAE6E0;
     
-    /* Bộ màu kẹo ngọt của cậu được phân bổ ở đây */
-    --sage: #ffadad;         /* Nút bấm trạng thái: Hồng pastel của cậu */
-    --sage-light: #fff0f0;   /* Hồng siêu nhẹ khi hover */
-    --sage-dark: #ff8fa3;    /* Hồng đậm hơn khi bấm chọn */
+    /* Bộ màu kẹo ngọt Pastel Cầu Vồng */
+    --sage: #ffadad;         /* Nền nút bấm giờ: Hồng pastel */
+    --sage-light: #ffe3e8;   /* Nền hồng siêu nhẹ khi hover */
+    --sage-dark: #ff8fa3;    /* Màu hồng đậm hơn tí khi chọn */
     --blush: #ffd6a5;        /* Cam đào nhạt */
     --radius: 14px;
     --radius-sm: 8px;
   }
 
-  /* Mix bộ số 1-2-3 và đường nối sang màu Xanh Dương Pastel theo ý cậu */
-  .step .step-num {
-    border: 1.5px solid #bdb2ff; /* Viền tím pastel nhạt */
-    color: #a0c4ff;              /* Số màu xanh dương pastel của cậu */
-    background: var(--white);
-  }
-  .step.active .step-num {
-    background: #a0c4ff !important; /* Xanh dương pastel khi đang ở bước đó */
-    border-color: #a0c4ff !important;
-    color: white !important;
-  }
-  .step.done .step-num {
-    background: #caffbf !important; /* Khi hoàn thành biến thành Xanh Lá pastel của cậu để báo hiệu "Done" */
-    border-color: #caffbf !important;
-    color: #4A7259 !important;
-  }
-  .step.active .step-label {
-    color: #a0c4ff !important;      /* Chữ của bước active cũng sang xanh dương */
-    font-weight: 600;
-  }
-  .step-line {
-    background: #bdb2ff !important; /* Thanh nối màu tím pastel nhạt */
-  }
-
-  /* Cải tiến thêm: Đổi màu viền lịch Picker sang màu vàng chanh pastel của cậu cho đồng bộ */
-  .date-input:focus { 
-    border-color: #fdffb6 !important; 
-    box-shadow: 0 0 0 3px #fffde6;
-  }
-
   html { background: var(--cream); }
 
   body {
-    font-family: 'DM Sans', sans-serif;
+    font-family: "Comic Sans MS", "Comic Sans", "Chalkboard SE", "Comic Neue", sans-serif; /* Tích hợp font chữ Comic Sans đáng yêu */
     font-size: 15px;
     color: var(--ink);
     background: var(--cream);
     min-height: 100vh;
     padding: 0 0 60px;
+  }
+
+  /* Đổi toàn bộ font tiêu đề sang Comic Sans đồng bộ */
+  .header-title, .card-title, .success-title {
+    font-family: "Comic Sans MS", "Comic Sans", "Chalkboard SE", sans-serif !important;
+    font-weight: bold;
+  }
+
+  /* Mix bộ số 1-2-3 và đường nối sang màu Xanh Dương Pastel */
+  .step .step-num {
+    border: 1.5px solid #bdb2ff !important; /* Viền tím xanh nhạt */
+    color: #a0c4ff !important;              /* Số màu xanh dương pastel */
+    background: var(--white) !important;
+  }
+  .step.active .step-num {
+    background: #a0c4ff !important;         /* Xanh dương khi active */
+    border-color: #a0c4ff !important;
+    color: white !important;
+  }
+  .step.done .step-num {
+    background: #caffbf !important;         /* Khi hoàn thành đổi sang Xanh Lá pastel */
+    border-color: #caffbf !important;
+    color: #4A7259 !important;
+  }
+  .step.active .step-label {
+    color: #a0c4ff !important;              /* Chữ bước active sang xanh dương */
+    font-weight: bold;
+  }
+  .step-line {
+    background: #bdb2ff !important;         /* Đường nối màu tím xanh nhạt */
+  }
+
+  /* Cải tiến: Đổi màu viền lịch picker sang màu vàng chanh pastel */
+  .date-input:focus { 
+    border-color: #fdffb6 !important; 
+    box-shadow: 0 0 0 3px #fffde6 !important;
   }
 
   /* Header */
@@ -79,16 +83,11 @@
     width: 36px;
     height: 36px;
     border-radius: 50%;
-    background: var(--sage-light);
+    background: var(--sage-light) !important;
     display: flex;
     align-items: center;
     justify-content: center;
     font-size: 18px;
-  }
-  .header-title {
-    font-family: 'DM Serif Display', serif;
-    font-size: 17px;
-    color: var(--ink);
   }
   .header-sub {
     font-size: 12px;
@@ -120,16 +119,13 @@
     width: 26px;
     height: 26px;
     border-radius: 50%;
-    border: 1.5px solid var(--ink-faint);
     display: flex;
     align-items: center;
     justify-content: center;
     font-size: 12px;
-    font-weight: 500;
-    color: var(--ink-soft);
-    background: var(--white);
-    transition: all 0.2s;
+    font-weight: bold;
     flex-shrink: 0;
+    transition: all 0.2s;
   }
   .step-label {
     font-size: 12px;
@@ -151,11 +147,6 @@
     padding: 24px;
     margin-bottom: 16px;
   }
-  .card-title {
-    font-family: 'DM Serif Display', serif;
-    font-size: 20px;
-    margin-bottom: 6px;
-  }
   .card-sub {
     font-size: 13px;
     color: var(--ink-soft);
@@ -169,7 +160,7 @@
     padding: 12px 16px;
     border: 1.5px solid var(--ink-faint);
     border-radius: var(--radius-sm);
-    font-family: 'DM Sans', sans-serif;
+    font-family: inherit;
     font-size: 15px;
     color: var(--ink);
     background: var(--white);
@@ -178,7 +169,6 @@
     transition: border-color 0.15s;
     appearance: none;
   }
-  .date-input:focus { border-color: var(--sage); }
 
   /* Slot grid */
   .slots-loading {
@@ -195,493 +185,4 @@
   }
   .slot-btn {
     padding: 12px 8px;
-    border-radius: var(--radius-sm);
-    border: 1.5px solid var(--ink-faint);
-    background: var(--white);
-    cursor: pointer;
-    text-align: center;
-    transition: all 0.15s;
-    font-family: 'DM Sans', sans-serif;
-  }
-  .slot-time {
-    font-size: 13px;
-    font-weight: 600;
-    color: var(--ink);
-    display: block;
-  }
-  .slot-avail {
-    font-size: 11px;
-    margin-top: 3px;
-    display: block;
-  }
-  .slot-btn.available:hover {
-    border-color: var(--sage);
-    background: var(--sage-light);
-  }
-  .slot-btn.available:hover .slot-time { color: #cc445b; }
-  .slot-btn.selected {
-    border-color: var(--sage);
-    background: var(--sage);
-  }
-  .slot-btn.selected .slot-time { color: white; }
-  .slot-btn.selected .slot-avail { color: rgba(255,255,255,0.8); }
-  .slot-btn.almost {
-    border-color: #D4903A;
-    background: #FEF7ED;
-  }
-  .slot-btn.almost .slot-avail { color: #9A5F0F; }
-  .slot-btn.full {
-    border-color: var(--ink-faint);
-    background: #F5F4F2;
-    cursor: not-allowed;
-    opacity: 0.6;
-  }
-  .slot-btn.full .slot-time { color: var(--ink-soft); }
-  .slot-btn.full .slot-avail { color: var(--ink-faint); }
-  .slot-btn.past {
-    display: none;
-  }
-
-  /* Form fields */
-  .field { margin-bottom: 16px; }
-  .field label {
-    display: block;
-    font-size: 13px;
-    font-weight: 500;
-    color: var(--ink);
-    margin-bottom: 6px;
-  }
-  .field input, .field select {
-    width: 100%;
-    padding: 12px 16px;
-    border: 1.5px solid var(--ink-faint);
-    border-radius: var(--radius-sm);
-    font-family: 'DM Sans', sans-serif;
-    font-size: 15px;
-    color: var(--ink);
-    background: var(--white);
-    outline: none;
-    transition: border-color 0.15s;
-  }
-  .field input:focus, .field select:focus { border-color: var(--sage); }
-  .field input::placeholder { color: var(--ink-faint); }
-
-  /* Selected slot summary */
-  .slot-summary {
-    background: var(--sage-light);
-    border-radius: var(--radius-sm);
-    padding: 12px 16px;
-    margin-bottom: 20px;
-    display: flex;
-    align-items: center;
-    gap: 10px;
-  }
-  .slot-summary-icon { font-size: 18px; }
-  .slot-summary-text { font-size: 13px; line-height: 1.4; }
-  .slot-summary-main { font-weight: 600; color: #cc445b; }
-  .slot-summary-sub { color: var(--ink-soft); }
-
-  /* Buttons */
-  .btn {
-    width: 100%;
-    padding: 14px;
-    border-radius: var(--radius-sm);
-    border: none;
-    font-family: 'DM Sans', sans-serif;
-    font-size: 15px;
-    font-weight: 600;
-    cursor: pointer;
-    transition: all 0.15s;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    gap: 8px;
-  }
-  .btn-primary {
-    background: var(--sage);
-    color: white;
-  }
-  .btn-primary:hover { background: var(--sage-dark); }
-  .btn-primary:disabled {
-    background: var(--ink-faint);
-    cursor: not-allowed;
-  }
-  .btn-ghost {
-    background: transparent;
-    color: var(--ink-soft);
-    border: 1px solid var(--ink-faint);
-    margin-top: 10px;
-  }
-  .btn-ghost:hover { background: var(--cream); }
-
-  /* Success state */
-  .success-card {
-    background: var(--white);
-    border-radius: var(--radius);
-    border: 1px solid #EAE6E0;
-    padding: 40px 24px;
-    text-align: center;
-    margin-top: 16px;
-  }
-  .success-icon {
-    width: 64px;
-    height: 64px;
-    border-radius: 50%;
-    background: var(--sage-light);
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    font-size: 28px;
-    margin: 0 auto 20px;
-  }
-  .success-title {
-    font-family: 'DM Serif Display', serif;
-    font-size: 24px;
-    margin-bottom: 8px;
-  }
-  .success-sub {
-    font-size: 14px;
-    color: var(--ink-soft);
-    line-height: 1.6;
-    max-width: 320px;
-    margin: 0 auto 24px;
-  }
-  .booking-ref {
-    background: var(--cream);
-    border-radius: var(--radius-sm);
-    padding: 12px 20px;
-    display: inline-block;
-    font-size: 13px;
-    color: var(--ink-soft);
-  }
-  .booking-ref strong { color: var(--ink); font-size: 16px; display: block; margin-top: 2px; }
-
-  /* Error */
-  .error-msg {
-    background: #FEF2F2;
-    border: 1px solid #FECACA;
-    border-radius: var(--radius-sm);
-    padding: 12px 16px;
-    font-size: 13px;
-    color: #B91C1C;
-    margin-bottom: 16px;
-    display: none;
-  }
-
-  /* Loading spinner */
-  .spinner {
-    width: 18px;
-    height: 18px;
-    border: 2px solid rgba(255,255,255,0.4);
-    border-top-color: white;
-    border-radius: 50%;
-    animation: spin 0.7s linear infinite;
-  }
-  @keyframes spin { to { transform: rotate(360deg); } }
-
-  /* Screen management */
-  .screen { display: none; }
-  .screen.active { display: block; }
-
-  @media (max-width: 400px) {
-    .slots-grid { grid-template-columns: repeat(2, 1fr); }
-  }
-</style>
-</head>
-<body>
-
-<div class="header">
-  <div class="header-logo">🌈</div>
-  <div>
-    <div class="header-title">My Little Dreamland</div>
-    <div class="header-sub">Book a session</div>
-  </div>
-</div>
-
-<div class="container">
-
-  <div class="steps">
-    <div class="step active" id="step1">
-      <div class="step-num">1</div>
-      <span class="step-label">Pick a time</span>
-    </div>
-    <div class="step-line"></div>
-    <div class="step" id="step2">
-      <div class="step-num">2</div>
-      <span class="step-label">Your details</span>
-    </div>
-    <div class="step-line"></div>
-    <div class="step" id="step3">
-      <div class="step-num">3</div>
-      <span class="step-label">Confirmed</span>
-    </div>
-  </div>
-
-  <div class="screen active" id="screen-1">
-    <div class="card">
-      <div class="card-title">When are you visiting?</div>
-      <div class="card-sub">Sessions run every hour. Each slot fits up to 40 children.</div>
-
-      <div class="field">
-        <label>Select a date</label>
-        <input type="date" class="date-input" id="date-input">
-      </div>
-
-      <div id="slots-container"></div>
-    </div>
-
-    <button class="btn btn-primary" id="btn-next-1" disabled>
-      Continue to details
-    </button>
-  </div>
-
-  <div class="screen" id="screen-2">
-    <div class="card">
-      <div class="card-title">Your details</div>
-      <div class="card-sub">We'll send a confirmation email once your booking is placed.</div>
-
-      <div class="slot-summary" id="slot-summary">
-        <div class="slot-summary-icon">🕐</div>
-        <div class="slot-summary-text">
-          <div class="slot-summary-main" id="summary-main"></div>
-          <div class="slot-summary-sub" id="summary-sub"></div>
-        </div>
-      </div>
-
-      <div class="error-msg" id="error-msg"></div>
-
-      <div class="field">
-        <label>Parent / guardian name</label>
-        <input type="text" id="f-name" placeholder="Jane Smith">
-      </div>
-      <div class="field">
-        <label>Email address</label>
-        <input type="email" id="f-email" placeholder="jane@email.com">
-      </div>
-      <div class="field">
-        <label>Phone number</label>
-        <input type="tel" id="f-phone" placeholder="0400 000 000">
-      </div>
-      <div class="field">
-        <label>Number of children</label>
-        <select id="f-children">
-          <option value="">Select...</option>
-          <option>1</option><option>2</option><option>3</option>
-          <option>4</option><option>5</option><option>6</option>
-          <option>7</option><option>8</option><option>9</option><option>10</option>
-        </select>
-      </div>
-    </div>
-
-    <button class="btn btn-primary" id="btn-submit">
-      Confirm booking
-    </button>
-    <button class="btn btn-ghost" id="btn-back">
-      ← Back
-    </button>
-  </div>
-
-  <div class="screen" id="screen-3">
-    <div class="success-card">
-      <div class="success-icon">🎉</div>
-      <div class="success-title">You're all booked!</div>
-      <div class="success-sub">
-        A confirmation email is on its way. We can't wait to see your little ones at Dreamland.
-      </div>
-      <div class="booking-ref">
-        Booking reference
-        <strong id="booking-id">—</strong>
-      </div>
-      <br><br>
-      <div style="font-size:13px; color:var(--ink-soft); line-height:1.6;">
-        📍 110 Garsed Street, Bendigo VIC 3550<br>
-        🕐 Please arrive a few minutes before your session
-      </div>
-    </div>
-    <button class="btn btn-ghost" style="margin-top:16px" onclick="resetForm()">
-      Book another session
-    </button>
-  </div>
-
-</div>
-
-<script>
-  // 🔴 Thay bằng Web App URL của bạn
-  const API_URL = "https://script.google.com/macros/s/AKfycbwd0Zs_ewx9LDmBT_WNpT4H07BODU4e7nrR0ZQJsJbLBnrwFaIrnLLDRrJ5uJl2p-MN7Q/exec";
-
-  let selectedDate = null;
-  let selectedSlot = null;
-
-  // Set min date = today (Dùng múi giờ địa phương chuẩn của Úc/Việt Nam)
-  const dateInput = document.getElementById('date-input');
-  const nowLoc = new Date();
-  const today = nowLoc.getFullYear() + '-' + String(nowLoc.getMonth() + 1).padStart(2, '0') + '-' + String(nowLoc.getDate()).padStart(2, '0');
-  dateInput.min = today;
-  dateInput.value = today;
-
-  dateInput.addEventListener('change', () => {
-    selectedSlot = null;
-    document.getElementById('btn-next-1').disabled = true;
-    loadSlots(dateInput.value);
-  });
-
-  async function loadSlots(date) {
-    selectedDate = date;
-    const container = document.getElementById('slots-container');
-    container.innerHTML = '<div class="slots-loading">Loading available times...</div>';
-
-    try {
-      const res = await fetch(`${API_URL}?action=getSlots&date=${date}`);
-      const data = await res.json();
-      renderSlots(data.slots);
-    } catch (e) {
-      container.innerHTML = '<div class="slots-loading" style="color:#B91C1C">Could not load times. Please try again.</div>';
-    }
-  }
-
-  function renderSlots(slots) {
-    const container = document.getElementById('slots-container');
-    const visible = slots.filter(s => s.status !== 'past');
-
-    if (visible.length === 0) {
-      container.innerHTML = '<div class="slots-loading">No more sessions available today. Please choose another date.</div>';
-      return;
-    }
-
-    const grid = document.createElement('div');
-    grid.className = 'slots-grid';
-
-    slots.forEach(slot => {
-      const btn = document.createElement('button');
-      btn.className = `slot-btn ${slot.status}`;
-      btn.dataset.key = slot.key;
-
-      let availText = '';
-      if (slot.status === 'available') availText = `${slot.remaining} spots left`;
-      else if (slot.status === 'almostFull') availText = `Only ${slot.remaining} left!`;
-      else if (slot.status === 'full') availText = 'Full';
-
-      btn.innerHTML = `<span class="slot-time">${slot.start}</span><span class="slot-avail">${availText}</span>`;
-
-      if (slot.status !== 'full' && slot.status !== 'past') {
-        btn.addEventListener('click', () => selectSlot(slot, btn));
-      }
-
-      grid.appendChild(btn);
-    });
-
-    container.innerHTML = '';
-    container.appendChild(grid);
-  }
-
-  function selectSlot(slot, btn) {
-    document.querySelectorAll('.slot-btn').forEach(b => {
-      if (b.dataset.key !== slot.key) b.classList.remove('selected');
-    });
-    btn.classList.add('selected');
-    selectedSlot = slot;
-    document.getElementById('btn-next-1').disabled = false;
-  }
-
-  // Nav: step 1 → 2
-  document.getElementById('btn-next-1').addEventListener('click', () => {
-    if (!selectedSlot) return;
-    const d = new Date(selectedDate + 'T00:00:00');
-    const dateStr = d.toLocaleDateString('en-AU', { weekday:'long', day:'numeric', month:'long', year:'numeric' });
-    document.getElementById('summary-main').textContent = `${selectedSlot.start} - ${selectedSlot.end}`;
-    document.getElementById('summary-sub').textContent = dateStr;
-    goToScreen(2);
-  });
-
-  document.getElementById('btn-back').addEventListener('click', () => goToScreen(1));
-
-  // Submit
-  document.getElementById('btn-submit').addEventListener('click', async () => {
-    const name = document.getElementById('f-name').value.trim();
-    const email = document.getElementById('f-email').value.trim();
-    const phone = document.getElementById('f-phone').value.trim();
-    const children = document.getElementById('f-children').value;
-    const errEl = document.getElementById('error-msg');
-
-    errEl.style.display = 'none';
-
-    if (!name || !email || !phone || !children) {
-      errEl.textContent = 'Please fill in all fields.';
-      errEl.style.display = 'block';
-      return;
-    }
-    if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) {
-      errEl.textContent = 'Please enter a valid email address.';
-      errEl.style.display = 'block';
-      return;
-    }
-
-    const btn = document.getElementById('btn-submit');
-    btn.disabled = true;
-    btn.innerHTML = '<div class="spinner"></div> Confirming...';
-
-    try {
-      const params = new URLSearchParams({
-        action: 'createBooking',
-        date: selectedDate,
-        slot: selectedSlot.key,
-        parentName: name,
-        parentEmail: email,
-        parentPhone: phone,
-        numChildren: String(parseInt(children)),
-      });
-
-      const res = await fetch(`${API_URL}?${params.toString()}`);
-      const data = await res.json();
-
-      if (data.success) {
-        document.getElementById('booking-id').textContent = data.bookingId;
-        goToScreen(3);
-      } else {
-        errEl.textContent = data.error || 'Something went wrong. Please try again.';
-        errEl.style.display = 'block';
-        btn.disabled = false;
-        btn.innerHTML = 'Confirm booking';
-      }
-    } catch (e) {
-      errEl.textContent = 'Connection error. Please check your internet and try again.';
-      errEl.style.display = 'block';
-      btn.disabled = false;
-      btn.innerHTML = 'Confirm booking';
-    }
-  });
-
-  function goToScreen(n) {
-    document.querySelectorAll('.screen').forEach((s, i) => {
-      s.classList.toggle('active', i + 1 === n);
-    });
-    for (let i = 1; i <= 3; i++) {
-      const el = document.getElementById(`step${i}`);
-      el.classList.remove('active', 'done');
-      if (i < n) el.classList.add('done');
-      else if (i === n) el.classList.add('active');
-    }
-    window.scrollTo(0, 0);
-  }
-
-  function resetForm() {
-    selectedDate = null;
-    selectedSlot = null;
-    document.getElementById('f-name').value = '';
-    document.getElementById('f-email').value = '';
-    document.getElementById('f-phone').value = '';
-    document.getElementById('f-children').value = '';
-    document.getElementById('slots-container').innerHTML = '';
-    document.getElementById('btn-next-1').disabled = true;
-    
-    dateInput.value = today;
-    loadSlots(today);
-    
-    goToScreen(1);
-  }
-
-  // Load today on start
-  loadSlots(today);
-</script>
-</body>
-</html>
+    border
