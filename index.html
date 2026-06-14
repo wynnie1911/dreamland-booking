@@ -258,9 +258,7 @@
   }
   .btn-ghost:hover { background: rgba(255,255,255,0.5) !important; }
 
-
-
-  /* CLOUDS ONLY — moving horizontally behind the booking form */
+  /* SOFT DREAM CLOUDS — moving horizontally behind the booking form */
   .dream-clouds {
     position: fixed;
     inset: 0;
@@ -275,17 +273,14 @@
   .dream-cloud {
     position: absolute;
     left: 0;
-    width: 172px;
-    height: 54px;
-    background: rgba(255,255,255,0.99);
+    width: 190px;
+    height: 58px;
+    background: rgba(255,255,255,0.88);
     border-radius: 999px;
-    box-shadow: 0 10px 28px rgba(255,143,163,0.28), 0 0 0 1px rgba(255,255,255,0.95);
-    opacity: var(--opacity, 0.9);
-    transform: translate3d(-260px, 0, 0) scale(var(--scale, 1));
-    animation-name: cloudDrift;
-    animation-duration: var(--duration, 38s);
-    animation-timing-function: linear;
-    animation-iteration-count: infinite;
+    opacity: var(--opacity, 0.78);
+    filter: drop-shadow(0 12px 18px rgba(255,173,173,0.13)) blur(0.15px);
+    transform: translate3d(-300px, 0, 0) scale(var(--scale, 1));
+    animation: softCloudDrift var(--duration, 48s) linear infinite;
     animation-delay: var(--delay, 0s);
     will-change: transform;
   }
@@ -293,52 +288,62 @@
   .dream-cloud::after {
     content: "";
     position: absolute;
-    background: rgba(255,255,255,1);
+    background: rgba(255,255,255,0.92);
     border-radius: 50%;
   }
   .dream-cloud::before {
-    width: 74px;
-    height: 74px;
-    left: 28px;
-    top: -34px;
+    width: 82px;
+    height: 82px;
+    left: 30px;
+    top: -38px;
   }
   .dream-cloud::after {
-    width: 92px;
-    height: 92px;
-    right: 22px;
-    top: -50px;
+    width: 102px;
+    height: 102px;
+    right: 24px;
+    top: -56px;
   }
-  .dream-cloud.c1 { top: 92px;  --scale: 0.78; --opacity: 0.96; --duration: 36s; --delay: -14s; }
-  .dream-cloud.c2 { top: 168px; --scale: 0.62; --opacity: 0.90; --duration: 44s; --delay: -28s; }
-  .dream-cloud.c3 { top: 310px; --scale: 0.95; --opacity: 0.86; --duration: 52s; --delay: -6s; }
-  .dream-cloud.c4 { top: 500px; --scale: 0.86; --opacity: 0.84; --duration: 48s; --delay: -34s; }
-  .dream-cloud.c5 { top: 700px; --scale: 0.72; --opacity: 0.80; --duration: 58s; --delay: -20s; }
-  .dream-cloud.c6 { top: 880px; --scale: 1.02; --opacity: 0.76; --duration: 64s; --delay: -42s; }
-  @keyframes cloudDrift {
-    0%   { transform: translate3d(-280px, 0, 0) scale(var(--scale, 1)); }
-    100% { transform: translate3d(calc(100vw + 280px), 0, 0) scale(var(--scale, 1)); }
+  .dream-cloud span {
+    position: absolute;
+    width: 74px;
+    height: 74px;
+    left: 82px;
+    top: -42px;
+    background: rgba(255,255,255,0.9);
+    border-radius: 50%;
+  }
+  .dream-cloud.c1 { top: 92px;  --scale: 0.78; --opacity: 0.82; --duration: 42s; --delay: -16s; }
+  .dream-cloud.c2 { top: 172px; --scale: 0.58; --opacity: 0.70; --duration: 52s; --delay: -34s; }
+  .dream-cloud.c3 { top: 322px; --scale: 0.92; --opacity: 0.76; --duration: 60s; --delay: -8s; }
+  .dream-cloud.c4 { top: 510px; --scale: 0.82; --opacity: 0.72; --duration: 56s; --delay: -40s; }
+  .dream-cloud.c5 { top: 715px; --scale: 0.68; --opacity: 0.64; --duration: 68s; --delay: -24s; }
+  .dream-cloud.c6 { top: 895px; --scale: 0.98; --opacity: 0.68; --duration: 74s; --delay: -50s; }
+  @keyframes softCloudDrift {
+    0%   { transform: translate3d(-320px, 0, 0) scale(var(--scale, 1)); }
+    100% { transform: translate3d(calc(100vw + 320px), 0, 0) scale(var(--scale, 1)); }
   }
   @media (max-width: 520px) {
-    .dream-cloud { width: 132px; height: 42px; }
-    .dream-cloud::before { width: 56px; height: 56px; left: 22px; top: -26px; }
-    .dream-cloud::after { width: 70px; height: 70px; right: 18px; top: -38px; }
+    .dream-cloud { width: 150px; height: 46px; }
+    .dream-cloud::before { width: 62px; height: 62px; left: 24px; top: -28px; }
+    .dream-cloud::after { width: 78px; height: 78px; right: 20px; top: -42px; }
+    .dream-cloud span { width: 58px; height: 58px; left: 62px; top: -32px; }
     .dream-cloud.c1 { top: 86px; }
-    .dream-cloud.c2 { top: 190px; }
-    .dream-cloud.c3 { top: 365px; }
-    .dream-cloud.c4 { top: 555px; }
-    .dream-cloud.c5 { top: 780px; }
+    .dream-cloud.c2 { top: 196px; }
+    .dream-cloud.c3 { top: 372px; }
+    .dream-cloud.c4 { top: 560px; }
+    .dream-cloud.c5 { top: 790px; }
   }
 
 </style>
 </head>
 <body>
 <div class="dream-clouds" aria-hidden="true">
-  <div class="dream-cloud c1"></div>
-  <div class="dream-cloud c2"></div>
-  <div class="dream-cloud c3"></div>
-  <div class="dream-cloud c4"></div>
-  <div class="dream-cloud c5"></div>
-  <div class="dream-cloud c6"></div>
+  <div class="dream-cloud c1"><span></span></div>
+  <div class="dream-cloud c2"><span></span></div>
+  <div class="dream-cloud c3"><span></span></div>
+  <div class="dream-cloud c4"><span></span></div>
+  <div class="dream-cloud c5"><span></span></div>
+  <div class="dream-cloud c6"><span></span></div>
 </div>
 
 
