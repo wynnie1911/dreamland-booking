@@ -277,10 +277,10 @@
     left: 0;
     width: 172px;
     height: 54px;
-    background: rgba(255,255,255,0.94);
+    background: rgba(255,255,255,0.99);
     border-radius: 999px;
-    box-shadow: 0 8px 22px rgba(255,173,173,0.16), 0 0 0 1px rgba(255,255,255,0.75);
-    opacity: var(--opacity, 0.78);
+    box-shadow: 0 10px 28px rgba(255,143,163,0.28), 0 0 0 1px rgba(255,255,255,0.95);
+    opacity: var(--opacity, 0.9);
     transform: translate3d(-260px, 0, 0) scale(var(--scale, 1));
     animation-name: cloudDrift;
     animation-duration: var(--duration, 38s);
@@ -293,7 +293,7 @@
   .dream-cloud::after {
     content: "";
     position: absolute;
-    background: rgba(255,255,255,0.95);
+    background: rgba(255,255,255,1);
     border-radius: 50%;
   }
   .dream-cloud::before {
@@ -308,12 +308,12 @@
     right: 22px;
     top: -50px;
   }
-  .dream-cloud.c1 { top: 92px;  --scale: 0.78; --opacity: 0.82; --duration: 36s; --delay: -14s; }
-  .dream-cloud.c2 { top: 168px; --scale: 0.62; --opacity: 0.74; --duration: 44s; --delay: -28s; }
-  .dream-cloud.c3 { top: 310px; --scale: 0.95; --opacity: 0.66; --duration: 52s; --delay: -6s; }
-  .dream-cloud.c4 { top: 500px; --scale: 0.86; --opacity: 0.62; --duration: 48s; --delay: -34s; }
-  .dream-cloud.c5 { top: 700px; --scale: 0.72; --opacity: 0.56; --duration: 58s; --delay: -20s; }
-  .dream-cloud.c6 { top: 880px; --scale: 1.02; --opacity: 0.48; --duration: 64s; --delay: -42s; }
+  .dream-cloud.c1 { top: 92px;  --scale: 0.78; --opacity: 0.96; --duration: 36s; --delay: -14s; }
+  .dream-cloud.c2 { top: 168px; --scale: 0.62; --opacity: 0.90; --duration: 44s; --delay: -28s; }
+  .dream-cloud.c3 { top: 310px; --scale: 0.95; --opacity: 0.86; --duration: 52s; --delay: -6s; }
+  .dream-cloud.c4 { top: 500px; --scale: 0.86; --opacity: 0.84; --duration: 48s; --delay: -34s; }
+  .dream-cloud.c5 { top: 700px; --scale: 0.72; --opacity: 0.80; --duration: 58s; --delay: -20s; }
+  .dream-cloud.c6 { top: 880px; --scale: 1.02; --opacity: 0.76; --duration: 64s; --delay: -42s; }
   @keyframes cloudDrift {
     0%   { transform: translate3d(-280px, 0, 0) scale(var(--scale, 1)); }
     100% { transform: translate3d(calc(100vw + 280px), 0, 0) scale(var(--scale, 1)); }
