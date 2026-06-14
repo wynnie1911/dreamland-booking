@@ -258,9 +258,76 @@
   }
   .btn-ghost:hover { background: rgba(255,255,255,0.5) !important; }
 
+
+
+  /* CLOUDS ONLY — added without changing existing booking layout, colours, or script */
+  .dream-clouds {
+    position: fixed;
+    inset: 0;
+    pointer-events: none;
+    overflow: hidden;
+    z-index: 0;
+  }
+  .header, .container {
+    position: relative;
+    z-index: 2;
+  }
+  .dream-cloud {
+    position: absolute;
+    width: 150px;
+    height: 48px;
+    background: rgba(255,255,255,0.78);
+    border-radius: 999px;
+    box-shadow: 0 8px 22px rgba(255,255,255,0.45);
+    filter: blur(0.2px);
+    animation: cloudFloat 34s linear infinite;
+  }
+  .dream-cloud::before,
+  .dream-cloud::after {
+    content: "";
+    position: absolute;
+    background: inherit;
+    border-radius: 50%;
+  }
+  .dream-cloud::before {
+    width: 64px;
+    height: 64px;
+    left: 26px;
+    top: -30px;
+  }
+  .dream-cloud::after {
+    width: 82px;
+    height: 82px;
+    right: 22px;
+    top: -44px;
+  }
+  .dream-cloud.c1 { top: 96px; left: -180px; transform: scale(0.82); animation-duration: 42s; animation-delay: -8s; opacity: 0.70; }
+  .dream-cloud.c2 { top: 190px; left: 62%; transform: scale(0.62); animation-duration: 50s; animation-delay: -25s; opacity: 0.55; }
+  .dream-cloud.c3 { top: 330px; left: -220px; transform: scale(1.05); animation-duration: 58s; animation-delay: -18s; opacity: 0.45; }
+  .dream-cloud.c4 { top: 520px; left: 72%; transform: scale(0.74); animation-duration: 64s; animation-delay: -35s; opacity: 0.38; }
+  .dream-cloud.c5 { top: 720px; left: -200px; transform: scale(0.9); animation-duration: 55s; animation-delay: -5s; opacity: 0.32; }
+  @keyframes cloudFloat {
+    0% { margin-left: -260px; }
+    100% { margin-left: calc(100vw + 320px); }
+  }
+  @media (max-width: 480px) {
+    .dream-cloud { width: 118px; height: 38px; }
+    .dream-cloud::before { width: 50px; height: 50px; left: 22px; top: -24px; }
+    .dream-cloud::after { width: 64px; height: 64px; right: 18px; top: -34px; }
+    .dream-cloud.c3, .dream-cloud.c5 { opacity: 0.24; }
+  }
+
 </style>
 </head>
 <body>
+<div class="dream-clouds" aria-hidden="true">
+  <div class="dream-cloud c1"></div>
+  <div class="dream-cloud c2"></div>
+  <div class="dream-cloud c3"></div>
+  <div class="dream-cloud c4"></div>
+  <div class="dream-cloud c5"></div>
+</div>
+
 
 <div class="header">
   <div class="header-logo">🌈</div>
