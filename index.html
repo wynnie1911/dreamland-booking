@@ -279,8 +279,8 @@
     height: 54px;
     background: rgba(255,255,255,0.99);
     border-radius: 999px;
-    box-shadow: 0 10px 28px rgba(255,143,163,0.28), 0 0 0 1px rgba(255,255,255,0.95);
-    opacity: var(--opacity, 0.9);
+    box-shadow: 0 10px 28px rgba(255,143,163,0.22), 0 0 0 1px rgba(255,255,255,0.75);
+    opacity: var(--opacity, 0.94);
     transform: translate3d(-260px, 0, 0) scale(var(--scale, 1));
     animation-name: cloudDrift;
     animation-duration: var(--duration, 38s);
@@ -308,12 +308,17 @@
     right: 22px;
     top: -50px;
   }
-  .dream-cloud.c1 { top: 92px;  --scale: 0.78; --opacity: 0.96; --duration: 36s; --delay: -14s; }
-  .dream-cloud.c2 { top: 168px; --scale: 0.62; --opacity: 0.90; --duration: 44s; --delay: -28s; }
-  .dream-cloud.c3 { top: 310px; --scale: 0.95; --opacity: 0.86; --duration: 52s; --delay: -6s; }
-  .dream-cloud.c4 { top: 500px; --scale: 0.86; --opacity: 0.84; --duration: 48s; --delay: -34s; }
-  .dream-cloud.c5 { top: 700px; --scale: 0.72; --opacity: 0.80; --duration: 58s; --delay: -20s; }
-  .dream-cloud.c6 { top: 880px; --scale: 1.02; --opacity: 0.76; --duration: 64s; --delay: -42s; }
+  .dream-cloud.c1 { top: 92px;  --scale: 0.78; --opacity: 1; --duration: 36s; --delay: -14s; }
+  .dream-cloud.c2 { top: 168px; --scale: 0.62; --opacity: 0.96; --duration: 44s; --delay: -28s; }
+  .dream-cloud.c3 { top: 310px; --scale: 0.95; --opacity: 0.94; --duration: 52s; --delay: -6s; }
+  .dream-cloud.c4 { top: 500px; --scale: 0.86; --opacity: 0.92; --duration: 48s; --delay: -34s; }
+  .dream-cloud.c5 { top: 700px; --scale: 0.72; --opacity: 0.90; --duration: 58s; --delay: -20s; }
+  .dream-cloud.c6 { top: 880px; --scale: 1.02; --opacity: 0.88; --duration: 64s; --delay: -42s; }
+
+  .dream-cloud.c7 { top: 245px; --scale: 0.70; --opacity: 0.92; --duration: 46s; --delay: -10s; }
+  .dream-cloud.c8 { top: 420px; --scale: 0.55; --opacity: 0.88; --duration: 54s; --delay: -32s; }
+  .dream-cloud.c9 { top: 610px; --scale: 0.90; --opacity: 0.90; --duration: 62s; --delay: -18s; }
+  .dream-cloud.c10 { top: 790px; --scale: 0.64; --opacity: 0.86; --duration: 70s; --delay: -48s; }
   @keyframes cloudDrift {
     0%   { transform: translate3d(-280px, 0, 0) scale(var(--scale, 1)); }
     100% { transform: translate3d(calc(100vw + 280px), 0, 0) scale(var(--scale, 1)); }
@@ -327,6 +332,10 @@
     .dream-cloud.c3 { top: 365px; }
     .dream-cloud.c4 { top: 555px; }
     .dream-cloud.c5 { top: 780px; }
+    .dream-cloud.c7 { top: 280px; }
+    .dream-cloud.c8 { top: 455px; }
+    .dream-cloud.c9 { top: 665px; }
+    .dream-cloud.c10 { top: 900px; }
   }
 
 </style>
@@ -339,6 +348,10 @@
   <div class="dream-cloud c4"></div>
   <div class="dream-cloud c5"></div>
   <div class="dream-cloud c6"></div>
+  <div class="dream-cloud c7"></div>
+  <div class="dream-cloud c8"></div>
+  <div class="dream-cloud c9"></div>
+  <div class="dream-cloud c10"></div>
 </div>
 
 
