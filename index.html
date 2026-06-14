@@ -1,405 +1,497 @@
-// ============================================================
-// MY LITTLE DREAMLAND — Booking API v2 (Apps Script)
-// ============================================================
-// Deploy: Extensions > Apps Script > Deploy > New deployment
-//         Type: Web App | Execute as: Me | Access: Anyone
-// ============================================================
-
-const CONFIG = {
-  SHEET_ID: "1lRXe8Tt02mNZ33u6wIaoWNbxOz2CtAlwTbeGIemVnFE",
-  OPEN_TIME: "08:30",
-  CLOSE_TIME: "20:00",
-  SLOT_DURATION: 15,    // minutes between entry slots
-  PLAY_DURATION: 60,    // minutes each session lasts
-  MAX_CAPACITY: 5,      // max people per 15-min entry slot
-  ALMOST_FULL_THRESHOLD: 2,
-  SHEET_BOOKINGS: "Bookings",
-  SHEET_CAPACITY: "Capacity",
-};
-
-// ============================================================
-// ROUTING
-// ============================================================
-
-function doGet(e) {
-  const action = e.parameter.action || "getSlots";
-
-  if (action === "getSlots") {
-    const date = e.parameter.date;
-    if (!date) return jsonError("Missing parameter: date");
-    return jsonResponse(getSlotsForDate(date));
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Book a Session — My Little Dreamland</title>
+<style>
+  @import url('https://fonts.googleapis.com/css2?family=DM+Sans:wght@300;400;500;600&family=DM+Serif+Display:ital@0;1&display=swap');
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+  
+  :root {
+    --cream: #FAF8F4; --white: #FFFFFF; --ink: #1A1714; --ink-soft: #6B6560;
+    --ink-faint: #C8C3BC; --sage: #7A9E87; --sage-light: #EDF3EF; --sage-dark: #4A7259;
+    --radius: 14px; --radius-sm: 8px;
   }
 
-  if (action === "createBooking") {
-    const data = {
-      action: "createBooking",
-      date: e.parameter.date,
-      slot: e.parameter.slot,
-      parentName: e.parameter.parentName,
-      parentEmail: e.parameter.parentEmail,
-      parentPhone: e.parameter.parentPhone || "",
-      numChildren: e.parameter.numChildren,
-      photoConsent: e.parameter.photoConsent || "no",
-      waiverSigned: e.parameter.waiverSigned || "no",
-      notes: e.parameter.notes || "",
-    };
-    return jsonResponse(createBooking(data));
+  /* PHỤC HỒI: Nền Cầu Vồng Lấp Lánh Nguyên Bản Của M */
+  html, body {
+    margin: 0; padding: 0; width: 100%; min-height: 100vh;
+    background: linear-gradient(135deg, 
+      rgba(255,173,173,0.3) 0%, 
+      rgba(255,214,165,0.3) 20%, 
+      rgba(253,255,182,0.3) 40%, 
+      rgba(202,255,191,0.3) 60%, 
+      rgba(155,246,255,0.3) 80%, 
+      rgba(160,196,255,0.3) 100%
+    ) fixed !important;
+    position: relative; overflow-x: hidden;
   }
 
-  return jsonError("Invalid action");
-}
+  body::before {
+    content: ""; position: fixed; top: 0; left: 0; right: 0; bottom: 0;
+    background-image: url("data:image/svg+xml,%3Csvg width='60' height='60' viewBox='0 0 60 60' xmlns='http://www.w3.org/2000/svg'%3E%3Cpath d='M30 10 L32 26 L48 28 L32 30 L30 46 L28 30 L12 28 L28 26 Z' fill='rgba(255,255,255,0.9)'/%3E%3C/svg%3E");
+    background-size: 120px 120px; z-index: -1; pointer-events: none; animation: twinkle 3s infinite alternate;
+  }
 
-function doPost(e) {
-  try {
-    let body;
-    if (e.parameter && e.parameter.data) {
-      body = JSON.parse(e.parameter.data);
-    } else if (e.postData && e.postData.contents) {
-      body = JSON.parse(e.postData.contents);
-    } else {
-      return jsonError("Could not read request body");
+  body::after {
+    content: ""; position: fixed; top: 30px; left: 30px; right: 0; bottom: 0;
+    background-image: url("data:image/svg+xml,%3Csvg width='40' height='40' viewBox='0 0 60 60' xmlns='http://www.w3.org/2000/svg'%3E%3Cpath d='M30 15 L31.5 28.5 L45 30 L31.5 31.5 L30 45 L28.5 31.5 L15 30 L28.5 28.5 Z' fill='rgba(255,255,255,0.7)'/%3E%3C/svg%3E");
+    background-size: 180px 180px; z-index: -1; pointer-events: none; animation: twinkle 4s infinite alternate-reverse;
+  }
+
+  @keyframes twinkle {
+    0% { opacity: 0.2; transform: scale(0.9); }
+    100% { opacity: 1; transform: scale(1.1); }
+  }
+
+  body { font-family: 'DM Sans', sans-serif !important; font-size: 15px; color: var(--ink); padding: 0 0 60px; }
+  .header { background: var(--white); border-bottom: 1px solid var(--ink-faint); padding: 18px 24px; display: flex; align-items: center; gap: 12px; }
+  .header-logo { width: 36px; height: 36px; border-radius: 50%; background: var(--sage-light); display: flex; align-items: center; justify-content: center; font-size: 18px; }
+  .header-title { font-family: 'DM Serif Display', serif; font-size: 17px; }
+  .header-sub { font-size: 12px; color: var(--ink-soft); margin-top: 1px; }
+  .container { max-width: 560px; margin: 0 auto; padding: 0 20px; }
+
+  .steps { display: flex; align-items: center; padding: 24px 0 20px; }
+  .step { display: flex; align-items: center; gap: 6px; flex-shrink: 0; }
+  .step-num { width: 24px; height: 24px; border-radius: 50%; border: 1.5px solid var(--ink-faint); display: flex; align-items: center; justify-content: center; font-size: 11px; font-weight: 600; color: var(--ink-soft); background: var(--white); transition: all 0.2s; flex-shrink: 0; }
+  .step-label { font-size: 11px; color: var(--ink-soft); white-space: nowrap; }
+  .step-line { flex: 1; height: 1px; background: var(--ink-faint); margin: 0 6px; }
+  .step.active .step-num { background: var(--sage); border-color: var(--sage); color: white; }
+  .step.active .step-label { color: var(--ink); font-weight: 600; }
+  .step.done .step-num { background: var(--sage-light); border-color: var(--sage); color: var(--sage-dark); font-size: 0; }
+  .step.done .step-num::after { content: '✓'; font-size: 11px; }
+
+  .card { background: var(--white); border-radius: var(--radius); border: 1px solid #EAE6E0; padding: 24px; margin-bottom: 16px; box-shadow: 0 4px 15px rgba(0,0,0,0.05); }
+  .card-title { font-family: 'DM Serif Display', serif; font-size: 20px; margin-bottom: 6px; }
+  .card-sub { font-size: 13px; color: var(--ink-soft); margin-bottom: 20px; line-height: 1.5; }
+
+  .date-input { width: 100%; padding: 12px 16px; border: 1.5px solid var(--ink-faint); border-radius: var(--radius-sm); font-family: 'DM Sans', sans-serif; font-size: 15px; color: var(--ink); background: var(--white); cursor: pointer; outline: none; transition: border-color 0.15s; appearance: none; }
+  .date-input:focus { border-color: var(--sage); }
+
+  /* Accordion Slots */
+  .slots-loading { text-align: center; padding: 32px; color: var(--ink-soft); font-size: 13px; }
+  .hour-group { margin-top: 12px; }
+  .hour-btn { 
+    width: 100%; padding: 16px 20px; background: var(--white); border: 1.5px solid var(--ink-faint); border-radius: var(--radius-sm);
+    text-align: left; font-size: 16px; font-weight: 600; color: var(--ink); display: flex; justify-content: space-between; align-items: center; cursor: pointer; transition: all 0.2s; font-family: 'DM Sans', sans-serif;
+  }
+  .hour-btn:hover { border-color: var(--sage); background: var(--sage-light); }
+  .hour-btn::after { content: '+'; font-size: 24px; color: var(--sage); font-weight: 300; line-height: 1; }
+  .hour-btn.open { border-bottom-left-radius: 0; border-bottom-right-radius: 0; border-bottom-color: transparent; background: var(--sage-light); border-color: var(--sage); }
+  .hour-btn.open::after { content: '−'; }
+  
+  .sub-slots { 
+    display: none; flex-direction: column; gap: 8px; padding: 12px 16px 16px; background: var(--white);
+    border: 1.5px solid var(--sage); border-top: none; border-bottom-left-radius: var(--radius-sm); border-bottom-right-radius: var(--radius-sm);
+  }
+  .slot-item {
+    display: flex; align-items: center; gap: 14px; padding: 12px 16px; border-radius: var(--radius-sm); border: 1.5px solid var(--ink-faint); background: var(--white); cursor: pointer; transition: all 0.15s; font-family: 'DM Sans', sans-serif;
+  }
+  .slot-item.available:hover { border-color: var(--sage); background: #f0f5f2; }
+  .slot-item.selected { border-color: var(--sage) !important; background: var(--sage) !important; }
+  .slot-item.selected .slot-time-label { color: white !important; }
+  .slot-item.selected .slot-play-time { color: rgba(255,255,255,0.8) !important; }
+  .slot-item.selected .slot-badge { background: rgba(255,255,255,0.2) !important; color: white !important; }
+  .slot-item.almostFull { border-color: #D4903A; background: #FEF7ED; }
+  .slot-item.full { opacity: 0.5; cursor: not-allowed; background: #F5F4F2; }
+
+  .slot-dot { width: 10px; height: 10px; border-radius: 50%; flex-shrink: 0; }
+  .slot-item.available .slot-dot { background: var(--sage); }
+  .slot-item.almostFull .slot-dot { background: #D4903A; }
+  .slot-item.full .slot-dot { background: var(--ink-faint); }
+  .slot-item.selected .slot-dot { background: white !important; }
+
+  .slot-time-label { font-size: 15px; font-weight: 600; color: var(--ink); flex: 1; }
+  .slot-play-time { font-size: 12px; color: var(--ink-soft); }
+  .slot-badge { font-size: 11px; font-weight: 600; padding: 3px 10px; border-radius: 20px; flex-shrink: 0; }
+  .slot-item.available .slot-badge { background: var(--sage-light); color: var(--sage-dark); }
+  .slot-item.almostFull .slot-badge { background: #FEF7ED; color: #9A5F0F; }
+  .slot-item.full .slot-badge { background: #F5F4F2; color: var(--ink-faint); }
+
+  .field { margin-bottom: 16px; }
+  .field label { display: block; font-size: 13px; font-weight: 600; color: var(--ink); margin-bottom: 6px; }
+  .field input, .field select { width: 100%; padding: 12px 16px; border: 1.5px solid var(--ink-faint); border-radius: var(--radius-sm); font-family: 'DM Sans', sans-serif; font-size: 15px; color: var(--ink); background: var(--white); outline: none; transition: border-color 0.15s; }
+  .field input:focus, .field select:focus { border-color: var(--sage); }
+
+  .child-group { background: #FAFAF9; border: 1px solid #EAE6E0; border-radius: var(--radius-sm); padding: 16px; margin-bottom: 12px; display: none; }
+  .child-group-title { font-size: 14px; font-weight: 600; color: var(--sage-dark); margin-bottom: 12px; border-bottom: 1px solid #EAE6E0; padding-bottom: 8px;}
+
+  .slot-summary { background: var(--sage-light); border-radius: var(--radius-sm); padding: 14px 16px; margin-bottom: 20px; }
+  .slot-summary-row { display: flex; align-items: center; gap: 8px; font-size: 13px; margin-bottom: 4px; }
+  .slot-summary-label { color: var(--ink-soft); width: 80px; flex-shrink: 0; }
+  .slot-summary-val { font-weight: 600; color: var(--sage-dark); }
+
+  /* Waiver Styles */
+  .waiver-intro { background: #FEF9E7; border: 1px solid #F9E79F; border-radius: var(--radius-sm); padding: 14px 16px; margin-bottom: 16px; font-size: 13px; color: #7D6608; line-height: 1.5; }
+  .waiver-section { border: 1px solid #EAE6E0; border-radius: var(--radius-sm); margin-bottom: 10px; overflow: hidden; }
+  .waiver-section-header { padding: 12px 16px; background: #FAFAF9; display: flex; align-items: flex-start; gap: 10px; }
+  .waiver-section-num { width: 20px; height: 20px; border-radius: 50%; background: var(--sage); color: white; font-size: 10px; font-weight: 700; display: flex; align-items: center; justify-content: center; flex-shrink: 0; margin-top: 1px; }
+  .waiver-section-title { font-size: 13px; font-weight: 600; color: var(--ink); margin-bottom: 3px; }
+  .waiver-section-body { font-size: 12px; color: var(--ink-soft); line-height: 1.5; }
+  .waiver-checkbox-row { padding: 10px 16px; border-top: 1px solid #EAE6E0; background: var(--white); display: flex; align-items: flex-start; gap: 10px; }
+  .waiver-checkbox-row input[type="checkbox"] { width: 17px; height: 17px; accent-color: var(--sage); cursor: pointer; flex-shrink: 0; margin-top: 2px; }
+  .waiver-checkbox-row label { font-size: 13px; color: var(--ink); cursor: pointer; line-height: 1.4; }
+  .waiver-radio-row { padding: 10px 16px; border-top: 1px solid #EAE6E0; background: var(--white); }
+  .radio-option { display: flex; align-items: center; gap: 10px; margin-bottom: 8px; cursor: pointer; }
+  .radio-option input[type="radio"] { width: 16px; height: 16px; accent-color: var(--sage); }
+  .final-ack { border: 2px solid var(--sage); border-radius: var(--radius-sm); padding: 16px; margin-top: 16px; display: flex; align-items: flex-start; gap: 12px; background: var(--sage-light); }
+  .final-ack input[type="checkbox"] { width: 20px; height: 20px; accent-color: var(--sage); cursor: pointer; flex-shrink: 0; margin-top: 2px; }
+  .final-ack label { font-size: 13px; color: var(--sage-dark); font-weight: 600; cursor: pointer; line-height: 1.5; }
+
+  .btn { width: 100%; padding: 14px; border-radius: var(--radius-sm); border: none; font-family: 'DM Sans', sans-serif; font-size: 15px; font-weight: 600; cursor: pointer; transition: all 0.15s; display: flex; align-items: center; justify-content: center; gap: 8px; }
+  .btn-primary { background: var(--sage); color: white; }
+  .btn-primary:hover { background: var(--sage-dark); }
+  .btn-primary:disabled { background: var(--ink-faint); cursor: not-allowed; }
+  .btn-ghost { background: transparent; color: var(--ink-soft); border: 1px solid var(--ink-faint); margin-top: 10px; }
+  .btn-ghost:hover { background: rgba(255,255,255,0.3); }
+
+  .success-card { background: var(--white); border-radius: var(--radius); border: 1px solid #EAE6E0; padding: 40px 24px; text-align: center; margin-top: 16px; }
+  .success-icon { width: 64px; height: 64px; border-radius: 50%; background: var(--sage-light); display: flex; align-items: center; justify-content: center; font-size: 28px; margin: 0 auto 20px; }
+  .success-title { font-family: 'DM Serif Display', serif; font-size: 24px; margin-bottom: 8px; }
+  .success-sub { font-size: 14px; color: var(--ink-soft); line-height: 1.6; max-width: 320px; margin: 0 auto 20px; }
+  .booking-ref { background: var(--cream); border-radius: var(--radius-sm); padding: 12px 20px; display: inline-block; font-size: 13px; color: var(--ink-soft); margin-bottom: 16px; }
+  .booking-ref strong { color: var(--ink); font-size: 18px; display: block; margin-top: 4px; letter-spacing: 1px; }
+  .hold-notice { background: #FEF9E7; border: 1px solid #F9E79F; border-radius: var(--radius-sm); padding: 14px 16px; font-size: 13px; color: #7D6608; line-height: 1.5; margin-bottom: 20px; text-align: left; }
+
+  .error-msg { background: #FEF2F2; border: 1px solid #FECACA; border-radius: var(--radius-sm); padding: 12px 16px; font-size: 13px; color: #B91C1C; margin-bottom: 16px; display: none; }
+  .spinner { width: 18px; height: 18px; border: 2px solid rgba(255,255,255,0.4); border-top-color: white; border-radius: 50%; animation: spin 0.7s linear infinite; }
+  @keyframes spin { to { transform: rotate(360deg); } }
+  .screen { display: none; }
+  .screen.active { display: block; }
+</style>
+</head>
+<body>
+
+<div class="header">
+  <div class="header-logo">🌈</div>
+  <div>
+    <div class="header-title">My Little Dreamland</div>
+    <div class="header-sub">Book a session</div>
+  </div>
+</div>
+
+<div class="container">
+  <div class="steps">
+    <div class="step active" id="step1"><div class="step-num">1</div><span class="step-label">Pick a time</span></div>
+    <div class="step-line"></div>
+    <div class="step" id="step2"><div class="step-num">2</div><span class="step-label">Your details</span></div>
+    <div class="step-line"></div>
+    <div class="step" id="step3"><div class="step-num">3</div><span class="step-label">Waiver</span></div>
+    <div class="step-line"></div>
+    <div class="step" id="step4"><div class="step-num">4</div><span class="step-label">Confirmed</span></div>
+  </div>
+
+  <div class="screen active" id="screen-1">
+    <div class="card">
+      <div class="card-title">When are you visiting?</div>
+      <div class="card-sub">Select a date to see available entry times. Each session is 1 hour. Entry slots open every 15 minutes, up to 5 children per slot.</div>
+      <div class="field">
+        <label>Select a date</label>
+        <input type="date" class="date-input" id="date-input">
+      </div>
+      <div id="slots-container"></div>
+    </div>
+    <button class="btn btn-primary" id="btn-next-1" disabled>Continue to details</button>
+  </div>
+
+  <div class="screen" id="screen-2">
+    <div class="card">
+      <div class="card-title">Contact Information</div>
+      <div class="card-sub">We'll use this to send your confirmation and hold your spot.</div>
+      <div class="slot-summary">
+        <div class="slot-summary-row"><span class="slot-summary-label">Date</span><span class="slot-summary-val" id="sum-date"></span></div>
+        <div class="slot-summary-row"><span class="slot-summary-label">Entry</span><span class="slot-summary-val" id="sum-entry"></span></div>
+        <div class="slot-summary-row"><span class="slot-summary-label">Session ends</span><span class="slot-summary-val" id="sum-exit"></span></div>
+      </div>
+      <div class="error-msg" id="error-msg-2"></div>
+      
+      <div class="field"><label>Parent / Guardian Full Name</label><input type="text" id="f-name" placeholder="Jane Smith"></div>
+      <div class="field"><label>Primary Phone Number</label><input type="tel" id="f-phone" placeholder="0400 000 000"></div>
+      <div class="field"><label>Email Address</label><input type="email" id="f-email" placeholder="jane@email.com"></div>
+      
+      <div class="field" style="margin-top: 24px;">
+        <label>Number of children participating today (including infants)</label>
+        <select id="f-children">
+          <option value="">Select...</option>
+          <option value="1">1 Child</option>
+          <option value="2">2 Children</option>
+          <option value="3">3 Children</option>
+          <option value="4">4 Children</option>
+          <option value="5">5+ Children</option>
+        </select>
+      </div>
+    </div>
+    <button class="btn btn-primary" id="btn-next-2">Continue to waiver</button>
+    <button class="btn btn-ghost" id="btn-back-1">← Back</button>
+  </div>
+
+  <div class="screen" id="screen-3">
+    <div class="card">
+      <div class="card-title">Liability Waiver & Details</div>
+      <div class="card-sub">Please provide details for the children and read the policies below.</div>
+      
+      <div id="children-container" style="margin-bottom: 24px;">
+        <div class="child-group" id="child-group-1"><div class="child-group-title">Child 1</div><div class="field"><label>Full Name</label><input type="text" id="c-name-1"></div><div class="field"><label>Date of Birth</label><input type="date" id="c-dob-1"></div></div>
+        <div class="child-group" id="child-group-2"><div class="child-group-title">Child 2</div><div class="field"><label>Full Name</label><input type="text" id="c-name-2"></div><div class="field"><label>Date of Birth</label><input type="date" id="c-dob-2"></div></div>
+        <div class="child-group" id="child-group-3"><div class="child-group-title">Child 3</div><div class="field"><label>Full Name</label><input type="text" id="c-name-3"></div><div class="field"><label>Date of Birth</label><input type="date" id="c-dob-3"></div></div>
+        <div class="child-group" id="child-group-4"><div class="child-group-title">Child 4</div><div class="field"><label>Full Name</label><input type="text" id="c-name-4"></div><div class="field"><label>Date of Birth</label><input type="date" id="c-dob-4"></div></div>
+        <div class="child-group" id="child-group-5"><div class="child-group-title">Child 5</div><div class="field"><label>Full Name</label><input type="text" id="c-name-5"></div><div class="field"><label>Date of Birth</label><input type="date" id="c-dob-5"></div></div>
+      </div>
+
+      <div class="waiver-intro">This waiver applies to all children in your care during your visit to My Little Dreamland.</div>
+
+      <div class="waiver-section">
+        <div class="waiver-section-header"><div class="waiver-section-num">1</div><div><div class="waiver-section-title">Assumption of Risk</div><div class="waiver-section-body">I understand that active play includes movement-based risk, including slips, trips, and collisions. I accept these ordinary risks and choose to allow my child(ren) to participate.</div></div></div>
+        <div class="waiver-checkbox-row"><input type="checkbox" id="w1" onchange="updateWaiverBtn()"><label for="w1">I acknowledge and accept the risks associated with active play.</label></div>
+      </div>
+      <div class="waiver-section">
+        <div class="waiver-section-header"><div class="waiver-section-num">2</div><div><div class="waiver-section-title">Supervision Policy</div><div class="waiver-section-body">I agree to actively supervise all children in my care while on the premises. Staff support venue operations but are not a substitute for direct supervision.</div></div></div>
+        <div class="waiver-checkbox-row"><input type="checkbox" id="w2" onchange="updateWaiverBtn()"><label for="w2">I agree to supervise my children at all times.</label></div>
+      </div>
+      <div class="waiver-section">
+        <div class="waiver-section-header"><div class="waiver-section-num">3</div><div><div class="waiver-section-title">Health and Hygiene</div><div class="waiver-section-body">I confirm that the children attending are fit to play and will not attend while unwell. I agree to follow all posted hygiene guidance.</div></div></div>
+        <div class="waiver-checkbox-row"><input type="checkbox" id="w3" onchange="updateWaiverBtn()"><label for="w3">I confirm my children are healthy and I will adhere to all hygiene rules.</label></div>
+      </div>
+      <div class="waiver-section">
+        <div class="waiver-section-header"><div class="waiver-section-num">4</div><div><div class="waiver-section-title">Safety Rules</div><div class="waiver-section-body">I agree that I and my children will follow all staff directions, posted signs, and ensure play matches age suitability.</div></div></div>
+        <div class="waiver-checkbox-row"><input type="checkbox" id="w4" onchange="updateWaiverBtn()"><label for="w4">I agree to comply with all safety rules and staff directions.</label></div>
+      </div>
+      <div class="waiver-section">
+        <div class="waiver-section-header"><div class="waiver-section-num">5</div><div><div class="waiver-section-title">Kindness and Respect</div><div class="waiver-section-body">I will encourage respectful behavior toward other children, families, and staff.</div></div></div>
+        <div class="waiver-checkbox-row"><input type="checkbox" id="w5" onchange="updateWaiverBtn()"><label for="w5">I agree to promote respectful and kind behavior.</label></div>
+      </div>
+      <div class="waiver-section">
+        <div class="waiver-section-header"><div class="waiver-section-num">6</div><div><div class="waiver-section-title">Release of Liability</div><div class="waiver-section-body">To the extent permitted by law, I release My Little Dreamland and its team from claims related to ordinary play activities on site.</div></div></div>
+        <div class="waiver-checkbox-row"><input type="checkbox" id="w6" onchange="updateWaiverBtn()"><label for="w6">I acknowledge and agree to the release of liability provision.</label></div>
+      </div>
+      <div class="waiver-section">
+        <div class="waiver-section-header"><div class="waiver-section-num">7</div><div><div class="waiver-section-title">Personal Belongings</div><div class="waiver-section-body">Personal items remain my sole responsibility while visiting the venue.</div></div></div>
+        <div class="waiver-checkbox-row"><input type="checkbox" id="w7" onchange="updateWaiverBtn()"><label for="w7">I acknowledge responsibility for all personal belongings.</label></div>
+      </div>
+      <div class="waiver-section">
+        <div class="waiver-section-header"><div class="waiver-section-num">8</div><div><div class="waiver-section-title">Photo and Media Consent</div><div class="waiver-section-body">Do you consent to My Little Dreamland potentially capturing venue photos or short video clips that may include your family in the background?</div></div></div>
+        <div class="waiver-radio-row">
+          <div class="radio-option"><input type="radio" name="photo" id="photo-yes" value="yes" onchange="updateWaiverBtn()"><label for="photo-yes">Yes, I consent to background media capture.</label></div>
+          <div class="radio-option" style="margin-top:6px;"><input type="radio" name="photo" id="photo-no" value="no" onchange="updateWaiverBtn()"><label for="photo-no">No, I do not consent (I will notify staff at check-in).</label></div>
+        </div>
+      </div>
+
+      <div class="final-ack">
+        <input type="checkbox" id="w-final" onchange="updateWaiverBtn()">
+        <label for="w-final">9. Final Acknowledgement: By checking this box, I confirm I am the parent/legal guardian for the listed child(ren) and fully agree to all terms of this waiver.</label>
+      </div>
+      <div class="error-msg" id="error-msg-3" style="margin-top:16px;"></div>
+    </div>
+    <button class="btn btn-primary" id="btn-submit" disabled>Complete booking</button>
+    <button class="btn btn-ghost" id="btn-back-2">← Back</button>
+  </div>
+
+  <div class="screen" id="screen-4">
+    <div class="success-card">
+      <div class="success-icon">🎉</div>
+      <div class="success-title">You're all booked!</div>
+      <div class="success-sub">A confirmation email is on its way with your session details.</div>
+      <div class="booking-ref">Booking reference<strong id="booking-id">—</strong></div>
+      <div class="hold-notice">
+        ⏳ <strong>Spot held for 15 minutes.</strong> Please complete payment or check in at the venue within this time.
+      </div>
+    </div>
+    <button class="btn btn-ghost" style="margin-top:16px" onclick="resetForm()">Book another session</button>
+  </div>
+</div>
+
+<script>
+  const API_URL = "https://script.google.com/macros/s/AKfycbwd0Zs_ewx9LDmBT_WNpT4H07BODU4e7nrR0ZQJsJbLBnrwFaIrnLLDRrJ5uJl2p-MN7Q/exec";
+  let selectedDate = null, selectedSlot = null;
+
+  const nowLoc = new Date();
+  const melbStr = nowLoc.toLocaleString("en-US", { timeZone: "Australia/Melbourne" });
+  const melbObj = new Date(melbStr);
+  let y = melbObj.getFullYear(), mo = String(melbObj.getMonth()+1).padStart(2,'0'), d = String(melbObj.getDate()).padStart(2,'0');
+  let todayStr = `${y}-${mo}-${d}`;
+  if (melbObj.getHours() >= 19) {
+    melbObj.setDate(melbObj.getDate()+1);
+    todayStr = `${melbObj.getFullYear()}-${String(melbObj.getMonth()+1).padStart(2,'0')}-${String(melbObj.getDate()).padStart(2,'0')}`;
+  }
+
+  const dateInput = document.getElementById('date-input');
+  dateInput.min = todayStr; dateInput.value = todayStr;
+
+  dateInput.addEventListener('change', () => {
+    selectedSlot = null; document.getElementById('btn-next-1').disabled = true; loadSlots(dateInput.value);
+  });
+
+  async function loadSlots(date) {
+    selectedDate = date;
+    const container = document.getElementById('slots-container');
+    container.innerHTML = '<div class="slots-loading">Loading available times...</div>';
+    try {
+      const res = await fetch(`${API_URL}?action=getSlots&date=${date}`);
+      const data = await res.json();
+      renderSlots(data.groupedSlots); 
+    } catch (e) {
+      container.innerHTML = '<div class="slots-loading" style="color:#B91C1C">Could not load times. Please try again.</div>';
     }
-    const action = body.action || "createBooking";
-    if (action === "createBooking") return jsonResponse(createBooking(body));
-    return jsonError("Invalid action");
-  } catch (err) {
-    return jsonError("Invalid request: " + err.message);
-  }
-}
-
-// ============================================================
-// GET SLOTS
-// ============================================================
-
-function getSlotsForDate(date) {
-  const groupedSlots = generateSlots();
-  const booked = getBookedCountsByDate(date);
-  const customCapacity = getCustomCapacity(date);
-
-  const now = new Date();
-  const todayStr = Utilities.formatDate(now, "Australia/Melbourne", "yyyy-MM-dd");
-  const currentMinutes =
-    parseInt(Utilities.formatDate(now, "Australia/Melbourne", "HH")) * 60 +
-    parseInt(Utilities.formatDate(now, "Australia/Melbourne", "mm"));
-
-  return {
-    date: date,
-    slotDuration: CONFIG.SLOT_DURATION,
-    playDuration: CONFIG.PLAY_DURATION,
-    groupedSlots: groupedSlots.map(group => {
-      return {
-        hourLabel: group.hourLabel,
-        subSlots: group.subSlots.map((slot) => {
-          const capacity = customCapacity[slot.key] ?? CONFIG.MAX_CAPACITY;
-          const bookedCount = booked[slot.key] || 0;
-          const remaining = Math.max(0, capacity - bookedCount);
-
-          let isPast = false;
-          if (date === todayStr) {
-            const [h, m] = slot.start.split(":").map(Number);
-            isPast = h * 60 + m <= currentMinutes;
-          }
-
-          return {
-            key: slot.key,
-            start: slot.start,
-            end: slot.end, 
-            capacity,
-            booked: bookedCount,
-            remaining,
-            status: isPast
-              ? "past"
-              : remaining === 0
-              ? "full"
-              : remaining <= CONFIG.ALMOST_FULL_THRESHOLD
-              ? "almostFull"
-              : "available",
-          };
-        })
-      };
-    })
-  };
-}
-
-// ============================================================
-// CREATE BOOKING
-// ============================================================
-
-function createBooking(data) {
-  const required = ["date", "slot", "parentName", "parentEmail", "numChildren"];
-  for (const field of required) {
-    if (!data[field]) return { success: false, error: "Missing required field: " + field };
   }
 
-  const numChildren = parseInt(data.numChildren);
-  if (isNaN(numChildren) || numChildren < 1 || numChildren > 10) {
-    return { success: false, error: "Invalid number of children (1-10)" };
-  }
-
-  const slotsData = getSlotsForDate(data.date);
-  let slot = null;
-  // Tìm slot trong mảng phân cấp giờ
-  for (const group of slotsData.groupedSlots) {
-    const found = group.subSlots.find(s => s.key === data.slot);
-    if (found) { slot = found; break; }
-  }
-
-  if (!slot) return { success: false, error: "Session not found" };
-  if (slot.status === "past") return { success: false, error: "This session has already passed" };
-  if (slot.remaining < numChildren) {
-    return {
-      success: false,
-      error: "Not enough spots. Remaining: " + slot.remaining + " spots",
-      remaining: slot.remaining,
-    };
-  }
-
-  const ss = SpreadsheetApp.openById(CONFIG.SHEET_ID);
-  const sheet = ss.getSheetByName(CONFIG.SHEET_BOOKINGS);
-  const bookingId = generateId();
-  const timestamp = new Date();
-  const expiryTime = new Date(timestamp.getTime() + 15 * 60 * 1000);
-  const expiryStr = Utilities.formatDate(expiryTime, "Australia/Melbourne", "yyyy-MM-dd HH:mm:ss");
-
-  sheet.appendRow([
-    bookingId,
-    Utilities.formatDate(timestamp, "Australia/Melbourne", "yyyy-MM-dd HH:mm:ss"),
-    data.date,
-    data.slot,
-    slot.start,
-    slot.end,
-    data.parentName,
-    data.parentEmail,
-    data.parentPhone || "",
-    numChildren,
-    data.waiverSigned || "no",
-    data.photoConsent || "no",
-    data.notes || "",
-    "confirmed",
-    expiryStr,
-  ]);
-
-  try {
-    sendConfirmationEmail(data, bookingId, slot, expiryStr);
-  } catch (emailErr) {
-    console.log("Email error:", emailErr.message);
-  }
-
-  return {
-    success: true,
-    bookingId,
-    message: "Booking confirmed!",
-    booking: {
-      id: bookingId,
-      date: data.date,
-      slot: data.slot,
-      entryTime: slot.start,
-      exitTime: slot.end,
-      numChildren,
-      parentName: data.parentName,
-      holdExpiry: expiryStr,
-    },
-  };
-}
-
-// ============================================================
-// HELPERS
-// ============================================================
-
-function generateSlots() {
-  const groups = [];
-  const [openH, openM] = CONFIG.OPEN_TIME.split(":").map(Number);
-  const [closeH, closeM] = CONFIG.CLOSE_TIME.split(":").map(Number);
-  const openTotal = openH * 60 + openM;
-  const closeTotal = closeH * 60 + closeM;
-
-  let current = openTotal;
-  let currentGroupHour = openH;
-  let currentSubSlots = [];
-
-  while (current + CONFIG.PLAY_DURATION <= closeTotal) {
-    const h = Math.floor(current / 60);
+  function renderSlots(groupedSlots) {
+    const container = document.getElementById('slots-container');
+    if (!groupedSlots || groupedSlots.length === 0) {
+      container.innerHTML = '<div class="slots-loading">No sessions available.</div>'; return;
+    }
+    container.innerHTML = '';
     
-    // Nếu qua giờ mới (vd từ 8 sang 9) và đã có slot bên trong, thì lưu lại thành 1 nhóm
-    if (h !== currentGroupHour && currentSubSlots.length > 0) {
-      const ampm = currentGroupHour >= 12 ? 'PM' : 'AM';
-      const displayHour = currentGroupHour > 12 ? currentGroupHour - 12 : (currentGroupHour === 0 ? 12 : currentGroupHour);
-      groups.push({
-        hourLabel: `${displayHour}:00 ${ampm}`,
-        subSlots: currentSubSlots
+    groupedSlots.forEach(group => {
+      const visibleSub = group.subSlots.filter(s => s.status !== 'past');
+      if (visibleSub.length === 0) return;
+
+      const groupDiv = document.createElement('div');
+      groupDiv.className = 'hour-group';
+
+      const btn = document.createElement('button');
+      btn.className = 'hour-btn'; btn.textContent = group.hourLabel;
+      
+      const subContainer = document.createElement('div');
+      subContainer.className = 'sub-slots';
+
+      btn.onclick = (e) => {
+        e.preventDefault();
+        btn.classList.toggle('open');
+        subContainer.style.display = subContainer.style.display === 'flex' ? 'none' : 'flex';
+      };
+
+      visibleSub.forEach(slot => {
+        const item = document.createElement('div');
+        item.className = `slot-item ${slot.status}`;
+        item.dataset.key = slot.key;
+
+        let badgeText = '';
+        if (slot.status === 'available') badgeText = `${slot.remaining} of ${slot.capacity} free`;
+        else if (slot.status === 'almostFull') badgeText = `Only ${slot.remaining} left!`;
+        else if (slot.status === 'full') badgeText = 'Full';
+
+        item.innerHTML = `
+          <div class="slot-dot"></div>
+          <div style="flex:1">
+            <div class="slot-time-label">${slot.start}</div>
+            <div class="slot-play-time">Session until ${slot.end}</div>
+          </div>
+          <div class="slot-badge">${badgeText}</div>
+        `;
+
+        if (slot.status !== 'full') {
+          item.addEventListener('click', () => {
+            document.querySelectorAll('.slot-item').forEach(i => i.classList.remove('selected'));
+            item.classList.add('selected');
+            selectedSlot = slot;
+            document.getElementById('btn-next-1').disabled = false;
+          });
+        }
+        subContainer.appendChild(item);
       });
-      currentGroupHour = h;
-      currentSubSlots = [];
-    } else if (h !== currentGroupHour && currentSubSlots.length === 0) {
-      currentGroupHour = h;
-    }
 
-    const start = minutesToTime(current);
-    const end = minutesToTime(current + CONFIG.PLAY_DURATION);
-    currentSubSlots.push({ key: `${start}-${end}`, start: start, end: end });
-
-    current += CONFIG.SLOT_DURATION;
-  }
-
-  // Đẩy nhóm cuối cùng vào
-  if (currentSubSlots.length > 0) {
-    const ampm = currentGroupHour >= 12 ? 'PM' : 'AM';
-    const displayHour = currentGroupHour > 12 ? currentGroupHour - 12 : (currentGroupHour === 0 ? 12 : currentGroupHour);
-    groups.push({
-      hourLabel: `${displayHour}:00 ${ampm}`,
-      subSlots: currentSubSlots
+      groupDiv.appendChild(btn); groupDiv.appendChild(subContainer); container.appendChild(groupDiv);
     });
   }
 
-  return groups;
-}
-
-function minutesToTime(minutes) {
-  const h = Math.floor(minutes / 60).toString().padStart(2, "0");
-  const m = (minutes % 60).toString().padStart(2, "0");
-  return `${h}:${m}`;
-}
-
-function getBookedCountsByDate(date) {
-  const ss = SpreadsheetApp.openById(CONFIG.SHEET_ID);
-  const sheet = ss.getSheetByName(CONFIG.SHEET_BOOKINGS);
-  const data = sheet.getDataRange().getValues();
-  const counts = {};
-
-  for (let i = 1; i < data.length; i++) {
-    const row = data[i];
-    let rowDateStr = row[2] instanceof Date
-      ? Utilities.formatDate(row[2], "Australia/Melbourne", "yyyy-MM-dd")
-      : String(row[2]).trim();
-
-    if (rowDateStr === date && row[13] === "confirmed") {
-      const slotKey = row[3];
-      const numChildren = parseInt(row[9]) || 0;
-      counts[slotKey] = (counts[slotKey] || 0) + numChildren;
-    }
-  }
-  return counts;
-}
-
-function getCustomCapacity(date) {
-  const ss = SpreadsheetApp.openById(CONFIG.SHEET_ID);
-  const sheet = ss.getSheetByName(CONFIG.SHEET_CAPACITY);
-  if (!sheet) return {};
-  const data = sheet.getDataRange().getValues();
-  const custom = {};
-  for (let i = 1; i < data.length; i++) {
-    const row = data[i];
-    if (!row[0]) continue;
-    let rowDateStr = row[0] instanceof Date
-      ? Utilities.formatDate(row[0], "Australia/Melbourne", "yyyy-MM-dd")
-      : String(row[0]).trim();
-    if (rowDateStr === date && row[1] && row[2]) {
-      custom[row[1]] = parseInt(row[2]);
-    }
-  }
-  return custom;
-}
-
-function generateId() {
-  return "BK" + new Date().getTime().toString(36).toUpperCase();
-}
-
-function sendConfirmationEmail(data, bookingId, slot, expiryStr) {
-  const subject = "Booking Confirmed — My Little Dreamland (#" + bookingId + ")";
-
-  let formattedDate = data.date;
-  try {
-    const d = new Date(data.date + "T00:00:00");
-    formattedDate = d.toLocaleDateString("en-AU", { weekday: "long", day: "numeric", month: "long", year: "numeric" });
-  } catch (e) {}
-
-  const htmlBody = `
-  <div style="font-family:'Helvetica Neue',Helvetica,Arial,sans-serif;color:#1A1714;max-width:600px;margin:0 auto;line-height:1.6;">
-    <div style="background:#EDF3EF;padding:32px 32px 24px;border-radius:12px 12px 0 0;text-align:center;">
-      <div style="font-size:32px;margin-bottom:8px;">🌈</div>
-      <h1 style="font-family:Georgia,serif;font-weight:normal;font-size:26px;margin:0;color:#1A1714;">Booking Confirmed!</h1>
-      <p style="margin:8px 0 0;color:#4A7259;font-size:14px;">We can't wait to see your little ones.</p>
-    </div>
-
-    <div style="background:#ffffff;padding:28px 32px;border:1px solid #EAE6E0;border-top:none;">
-      <p>Dear <strong>${data.parentName}</strong>,</p>
-      <p>Your session has been successfully booked. Here are your details:</p>
-
-      <table style="width:100%;border-collapse:collapse;margin:20px 0;background:#FAF8F4;border-radius:8px;overflow:hidden;">
-        <tr><td style="padding:12px 16px;border-bottom:1px solid #EAE6E0;font-weight:600;width:40%;color:#6B6560;font-size:13px;">BOOKING REF</td><td style="padding:12px 16px;border-bottom:1px solid #EAE6E0;font-weight:700;color:#4A7259;font-size:16px;">${bookingId}</td></tr>
-        <tr><td style="padding:12px 16px;border-bottom:1px solid #EAE6E0;font-weight:600;color:#6B6560;font-size:13px;">DATE</td><td style="padding:12px 16px;border-bottom:1px solid #EAE6E0;">${formattedDate}</td></tr>
-        <tr><td style="padding:12px 16px;border-bottom:1px solid #EAE6E0;font-weight:600;color:#6B6560;font-size:13px;">ENTRY TIME</td><td style="padding:12px 16px;border-bottom:1px solid #EAE6E0;">${slot.start}</td></tr>
-        <tr><td style="padding:12px 16px;border-bottom:1px solid #EAE6E0;font-weight:600;color:#6B6560;font-size:13px;">SESSION ENDS</td><td style="padding:12px 16px;border-bottom:1px solid #EAE6E0;">${slot.end}</td></tr>
-        <tr><td style="padding:12px 16px;font-weight:600;color:#6B6560;font-size:13px;">CHILDREN</td><td style="padding:12px 16px;">${data.numChildren} ${parseInt(data.numChildren) > 1 ? "children" : "child"}</td></tr>
-      </table>
-
-      <div style="background:#FEF9E7;border:1px solid #F9E79F;border-radius:8px;padding:16px;margin-bottom:20px;">
-        <p style="margin:0 0 6px;font-weight:700;color:#7D6608;font-size:14px;">⏳ Important: Spot Hold Notice</p>
-        <p style="margin:0;font-size:13px;color:#7D6608;line-height:1.5;">Your spot is being held until <strong>${expiryStr} (AEST)</strong>. Please complete payment or check-in at the venue within 15 minutes. After this time, your spot may be released and given to the next family in the queue.</p>
-      </div>
-
-      <div style="background:#EDF3EF;border-left:4px solid #7A9E87;padding:16px;margin-bottom:20px;border-radius:0 8px 8px 0;">
-        <p style="margin:0 0 6px;font-weight:700;color:#4A7259;font-size:14px;">Venue Information</p>
-        <p style="margin:0;font-size:13px;color:#6B6560;line-height:1.8;">
-          📍 110 Garsed Street, Bendigo VIC 3550<br>
-          🕐 Open 7 days, 8:30AM – 8:00PM<br>
-          🧦 Socks required for all adults and children<br>
-          ⏱ Please arrive 5–10 minutes before your entry time
-        </p>
-      </div>
-
-      <p style="font-size:13px;color:#6B6560;">Need to change or cancel? Reply to this email or contact us at <a href="mailto:hello@mylittledreamland.com.au" style="color:#7A9E87;">hello@mylittledreamland.com.au</a></p>
-      <p style="margin-top:28px;">Warm regards,<br><strong>My Little Dreamland Team</strong></p>
-    </div>
-
-    <div style="background:#FAF8F4;padding:16px 32px;border-radius:0 0 12px 12px;text-align:center;font-size:12px;color:#C8C3BC;">
-      My Little Dreamland · 110 Garsed Street, Bendigo VIC 3550
-    </div>
-  </div>`;
-
-  GmailApp.sendEmail(data.parentEmail, subject, "", {
-    htmlBody,
-    name: "My Little Dreamland",
-    replyTo: "hello@mylittledreamland.com.au",
+  document.getElementById('btn-next-1').addEventListener('click', () => {
+    if (!selectedSlot) return;
+    const d = new Date(selectedDate + 'T00:00:00');
+    document.getElementById('sum-date').textContent = d.toLocaleDateString('en-AU', { weekday:'long', day:'numeric', month:'long', year:'numeric' });
+    document.getElementById('sum-entry').textContent = selectedSlot.start;
+    document.getElementById('sum-exit').textContent = selectedSlot.end;
+    goToScreen(2);
   });
-}
 
-// ============================================================
-// UTILS
-// ============================================================
+  document.getElementById('btn-next-2').addEventListener('click', () => {
+    const name = document.getElementById('f-name').value.trim();
+    const email = document.getElementById('f-email').value.trim();
+    const phone = document.getElementById('f-phone').value.trim();
+    const children = document.getElementById('f-children').value;
+    const errEl = document.getElementById('error-msg-2');
+    errEl.style.display = 'none';
+    
+    if (!name || !email || !phone || !children) { errEl.textContent = 'Please fill in all contact fields.'; errEl.style.display = 'block'; return; }
+    if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) { errEl.textContent = 'Please enter a valid email address.'; errEl.style.display = 'block'; return; }
+    
+    const num = parseInt(children);
+    for(let i = 1; i <= 5; i++) {
+        document.getElementById(`child-group-${i}`).style.display = i <= num ? 'block' : 'none';
+    }
+    goToScreen(3);
+  });
 
-function jsonResponse(data) {
-  return ContentService.createTextOutput(JSON.stringify(data)).setMimeType(ContentService.MimeType.JSON);
-}
-function jsonError(message) {
-  return ContentService.createTextOutput(JSON.stringify({ success: false, error: message })).setMimeType(ContentService.MimeType.JSON);
-}
+  document.getElementById('btn-back-1').addEventListener('click', () => goToScreen(1));
+  document.getElementById('btn-back-2').addEventListener('click', () => goToScreen(2));
 
-// ============================================================
-// SETUP — Run once to create sheets
-// ============================================================
-
-function setupSheets() {
-  const ss = SpreadsheetApp.openById(CONFIG.SHEET_ID);
-
-  let bookings = ss.getSheetByName(CONFIG.SHEET_BOOKINGS);
-  if (!bookings) bookings = ss.insertSheet(CONFIG.SHEET_BOOKINGS);
-  bookings.clearContents();
-  bookings.appendRow([
-    "ID", "Timestamp", "Date", "Slot Key", "Entry Time", "Exit Time",
-    "Parent Name", "Email", "Phone", "Num Children",
-    "Waiver Signed", "Photo Consent", "Notes", "Status", "Hold Expiry"
-  ]);
-  bookings.setFrozenRows(1);
-  bookings.getRange("A1:O1").setBackground("#4A7259").setFontColor("#FFFFFF").setFontWeight("bold");
-
-  let capacity = ss.getSheetByName(CONFIG.SHEET_CAPACITY);
-  if (!capacity) {
-    capacity = ss.insertSheet(CONFIG.SHEET_CAPACITY);
-    capacity.appendRow(["Date", "Slot Key", "Max Capacity", "Note"]);
-    capacity.setFrozenRows(1);
-    capacity.getRange("A1:D1").setBackground("#34A853").setFontColor("#FFFFFF").setFontWeight("bold");
+  function updateWaiverBtn() {
+    const allChecked = ['w1','w2','w3','w4','w5','w6','w7','w-final'].every(id => document.getElementById(id).checked);
+    const photoSelected = document.querySelector('input[name="photo"]:checked');
+    document.getElementById('btn-submit').disabled = !(allChecked && photoSelected);
   }
 
-  SpreadsheetApp.getUi().alert("Setup complete!");
-}
+  document.getElementById('btn-submit').addEventListener('click', async () => {
+    const errEl = document.getElementById('error-msg-3'); errEl.style.display = 'none';
+    const num = parseInt(document.getElementById('f-children').value);
+    let childNotesArr = [];
+    
+    for(let i=1; i<=num; i++) {
+        let cn = document.getElementById(`c-name-${i}`).value.trim();
+        let cd = document.getElementById(`c-dob-${i}`).value;
+        if(!cn || !cd) { errEl.textContent = `Please fill Name and DOB for Child ${i}.`; errEl.style.display = 'block'; return; }
+        childNotesArr.push(`Child ${i}: ${cn} (DOB: ${cd})`);
+    }
+
+    const name = document.getElementById('f-name').value.trim();
+    const email = document.getElementById('f-email').value.trim();
+    const phone = document.getElementById('f-phone').value.trim();
+    const photoConsent = document.querySelector('input[name="photo"]:checked').value;
+    const compiledNotes = childNotesArr.join(" | ");
+
+    const btn = document.getElementById('btn-submit'); btn.disabled = true; btn.innerHTML = '<div class="spinner"></div> Confirming...';
+
+    try {
+      const params = new URLSearchParams({
+        action: 'createBooking', date: selectedDate, slot: selectedSlot.key,
+        parentName: name, parentEmail: email, parentPhone: phone,
+        numChildren: String(num), photoConsent, waiverSigned: 'yes', notes: compiledNotes
+      });
+      
+      const res = await fetch(`${API_URL}?${params.toString()}`);
+      const data = await res.json();
+      
+      if (data.success) {
+        document.getElementById('booking-id').textContent = data.bookingId; goToScreen(4);
+      } else {
+        errEl.textContent = data.error || 'Something went wrong.'; errEl.style.display = 'block'; btn.innerHTML = 'Complete booking'; updateWaiverBtn();
+      }
+    } catch (e) {
+      errEl.textContent = 'Connection error. Please try again.'; errEl.style.display = 'block'; btn.innerHTML = 'Complete booking'; updateWaiverBtn();
+    }
+  });
+
+  function goToScreen(n) {
+    document.querySelectorAll('.screen').forEach((s, i) => s.classList.toggle('active', i+1 === n));
+    for (let i = 1; i <= 4; i++) {
+      const el = document.getElementById(`step${i}`); el.classList.remove('active','done');
+      if (i < n) el.classList.add('done'); else if (i === n) el.classList.add('active');
+    }
+    window.scrollTo(0, 0);
+  }
+
+  function resetForm() {
+    selectedDate = null; selectedSlot = null;
+    ['f-name','f-email','f-phone'].forEach(id => document.getElementById(id).value = '');
+    document.getElementById('f-children').value = '';
+    for(let i=1; i<=5; i++) { document.getElementById(`c-name-${i}`).value = ''; document.getElementById(`c-dob-${i}`).value = ''; }
+    ['w1','w2','w3','w4','w5','w6','w7','w-final'].forEach(id => document.getElementById(id).checked = false);
+    document.querySelectorAll('input[name="photo"]').forEach(r => r.checked = false);
+    document.getElementById('btn-next-1').disabled = true; document.getElementById('btn-submit').disabled = true;
+    dateInput.value = todayStr; loadSlots(todayStr); goToScreen(1);
+  }
+
+  loadSlots(todayStr);
+</script>
+</body>
+</html>
